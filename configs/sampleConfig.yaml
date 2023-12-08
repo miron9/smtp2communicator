@@ -1,0 +1,16 @@
+tcpPort: 25
+channels:
+    file:
+        enabled: true
+        dirPath: /path/to/files
+    telegram:
+        enabled: true
+        userId: 123456789
+        botKey: your_telegram_bot_api_key
+    slack:
+        enabled: false
+    teams:
+        enabled: false
+    whatsup:
+        enabled: false
+

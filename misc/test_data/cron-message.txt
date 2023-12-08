@@ -1,0 +1,17 @@
+From: root (Cron Daemon)
+To: user
+Subject: Cron <user@desktop> df -h
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Cron-Env: <SHELL=/bin/sh>
+X-Cron-Env: <HOME=/home/user>
+X-Cron-Env: <LOGNAME=user>
+
+Filesystem Size Used Avail Use% Mounted on
+tmpfs 6.2G 2.7M 6.2G 1% /run
+/dev/nvme0n1p3 94G 47G 43G 52% /
+tmpfs 31G 5.0M 31G 1% /dev/shm
+tmpfs 5.0M 16K 5.0M 1% /run/lock
+tmpfs 128M 0 128M 0% /mnt/ramdisk
+tmpfs 31G 0 31G 0% /run/qemu

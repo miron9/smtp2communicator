@@ -1,0 +1,32 @@
+auser@desktop:smtp-server-stud$ nc -v localhost 25
+Connection to localhost (127.0.0.1) 25 port [tcp/smtp] succeeded!
+220 desktop.broadband ESMTP Sendmail 8.17.1.9/8.17.1.9/Debian-2; Sun, 19 Nov 2023 15:34:50 GMT; (No UCE/UBE) logging access from: localhost(OK)-localhost [127.0.0.1]
+HELO example.com
+250 desktop.broadband Hello localhost [127.0.0.1], pleased to meet you
+MAIL FROM: user@example.com
+250 2.1.0 user@example.com... Sender ok
+RCPT TO: someotheruser@example.com
+250 2.1.5 someotheruser@example.com... Recipient ok
+DATA
+354 Enter mail, end with "." on a line by itself
+Subject: A test message
+
+manual
+  pool: mydata
+ state: ONLINE
+  scan: resilvered 999G in 00:04:07 with 0 errors on Wed Nov  1 22:02:00 2023
+config:
+
+	NAME           STATE     READ WRITE CKSUM
+	mydata         ONLINE       0     0     0
+	  mirror-0     ONLINE       0     0     0
+	    nvme0n1p4  ONLINE       0     0     0
+	    nvme1n1p4  ONLINE       0     0     0
+
+errors: No known data errors
+.
+250 2.0.0 3AJFYoLu069780 Message accepted for delivery
+QUIT
+221 2.0.0 desktop.broadband closing connection
+^C
+

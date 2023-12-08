@@ -1,0 +1,20 @@
+HELO example.com
+MAIL FROM: cron@desktop
+RCPT TO: user@example.com
+DATA
+Subject: Test message (zpool status)
+
+  pool: data
+ state: ONLINE
+  scan: resilvered 999G in 00:04:07 with 0 errors on Wed Nov  1 22:02:00 2023
+config:
+
+	NAME           STATE     READ WRITE CKSUM
+	mydata         ONLINE       0     0     0
+	  mirror-0     ONLINE       0     0     0
+	    nvme0n1p4  ONLINE       0     0     0
+	    nvme1n1p4  ONLINE       0     0     0
+
+errors: No known data errors
+.
+QUIT
