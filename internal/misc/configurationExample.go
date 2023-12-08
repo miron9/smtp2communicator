@@ -2,7 +2,6 @@ package misc
 
 import (
 	"fmt"
-	"os"
 
 	c "smtp2communicator/internal/common"
 
@@ -41,6 +40,4 @@ func ConfigurationExample() {
 	}
 
 	fmt.Println(string(yConfig))
-
-	os.Exit(0)
 }
