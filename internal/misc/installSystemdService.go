@@ -26,7 +26,7 @@ import (
 //
 // Returns:
 //
-// - n/a
+// - exit (bool): always returns true indicating we need to exit afterwards
 func SystemdService(
 	ctx context.Context,
 	systemdInstallFlag *bool,
