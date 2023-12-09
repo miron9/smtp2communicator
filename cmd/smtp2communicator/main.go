@@ -114,6 +114,7 @@ func main() {
 	// print example configuration to stdout and exit
 	if *configurationExample {
 		m.ConfigurationExample()
+        os.Exit(0)
 	}
 
 	// load configuration from file
