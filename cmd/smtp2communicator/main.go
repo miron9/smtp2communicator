@@ -141,8 +141,8 @@ func main() {
 	) {
 		os.Exit(0)
 	} else {
-        os.Exit(1)
-    }
+		os.Exit(1)
+	}
 
 	// This will un/install this tool as an MTA end exit if either of the flags
 	// has been defined
