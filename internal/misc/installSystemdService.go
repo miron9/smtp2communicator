@@ -3,7 +3,8 @@ package misc
 import (
 	"context"
 	"fmt"
-	"os"
+	"os/exec"
+
 	"smtp2communicator/pkg/logger"
 	"smtp2communicator/pkg/service"
 )
@@ -35,9 +36,17 @@ func SystemdService(
 	thisBinaryPath string,
 	binInstallPath string,
 	projectName string,
-) {
-	//get logger
+) (exit bool) {
+	// get logger
 	log := logger.LoggerFromContext(ctx)
+
+	// check if systemd installed by looking up systemd executable
+	if systemdPath, err := exec.LookPath("systemd"); err != nil {
+		log.Info("It doesn't look like Systemd is present on this system. Exiting.")
+		return true
+	} else {
+		log.Debugf("Systemd executable found here: %s", systemdPath)
+	}
 
 	// Systemd
 	if !*systemdInstallFlag || !*systemdUninstallFlag {
@@ -45,21 +54,19 @@ func SystemdService(
 		configurationFileName := fmt.Sprintf("%s%s.yaml", configurationInstallPath, projectName)
 		executableInstallationPath := fmt.Sprintf("%s%s", binInstallPath, projectName)
 		s.Name = projectName
-		s.Description = "This is my smtp stub that forwards all emails to Telegram"
+		s.Description = "This is my smtp stub that forwards all emails to a communicator"
 		s.ExecStart = fmt.Sprintf("%s -configuration %s -verbosity debug", executableInstallationPath, configurationFileName)
 		s.AddFileToCopy(*configurationFileFlag, configurationFileName, 0o600)
 		s.AddFileToCopy(thisBinaryPath, executableInstallationPath, 0o755)
 
 		if *systemdInstallFlag {
 			s.InstallEnableStart()
-			os.Exit(0)
 		}
 		if *systemdUninstallFlag {
 			s.StopDisableUninstall()
-			os.Exit(0)
 		}
 	} else {
 		log.Error("The 'systemdInstall' and 'systemdUninstall' flags can't be used together!")
-		os.Exit(1)
 	}
+	return true
 }
