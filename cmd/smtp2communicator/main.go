@@ -114,7 +114,7 @@ func main() {
 	// print example configuration to stdout and exit
 	if *configurationExample {
 		m.ConfigurationExample()
-        os.Exit(0)
+		os.Exit(0)
 	}
 
 	// load configuration from file
@@ -129,7 +129,7 @@ func main() {
 
 	// This will un/install this tools as a Systemd service and exit if either
 	// of the flags has been defined
-	m.SystemdService(
+	if m.SystemdService(
 		ctx,
 		systemdInstallFlag,
 		systemdUninstallFlag,
@@ -138,7 +138,9 @@ func main() {
 		thisBinaryPath,
 		binInstallPath,
 		projectName,
-	)
+	) {
+		os.Exit(0)
+	}
 
 	// This will un/install this tool as an MTA end exit if either of the flags
 	// has been defined
