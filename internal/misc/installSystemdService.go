@@ -61,12 +61,15 @@ func SystemdService(
 
 		if *systemdInstallFlag {
 			s.InstallEnableStart()
+			return true
 		}
 		if *systemdUninstallFlag {
 			s.StopDisableUninstall()
+			return true
 		}
 	} else {
 		log.Error("The 'systemdInstall' and 'systemdUninstall' flags can't be used together!")
+		return true
 	}
-	return true
+	return false
 }

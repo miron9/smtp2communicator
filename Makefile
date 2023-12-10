@@ -17,3 +17,5 @@ clean:
 	$(GOCMD) clean
 	rm -f $(BINARY_NAME)
 
+tidy:
+	$(GOCMD) mod tidy

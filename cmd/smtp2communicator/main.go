@@ -2,8 +2,10 @@ package main
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"fmt"
+	"io/fs"
 	"os"
 	"sync"
 
@@ -121,8 +123,11 @@ func main() {
 	conf = &c.Configuration{}
 	err = conf.GetConfiguration(ctx, *configurationFileFlag)
 	if err != nil {
-		log.Error(err)
-		log.Errorf("The configuration file must be specified with --configuration flag or exist in one of the following locations: %s", configurationNotFound)
+		if errors.Is(err, fs.ErrPermission) {
+			log.Error(err)
+		} else {
+			log.Errorf("The configuration file must be specified with --configuration flag or exist in one of the following locations: %s", configurationNotFound)
+		}
 		msg := fmt.Sprintf("Can't load configuration file from '%s'. Does it exist?", *configurationFileFlag)
 		panic(msg)
 	}
@@ -140,8 +145,6 @@ func main() {
 		projectName,
 	) {
 		os.Exit(0)
-	} else {
-		os.Exit(1)
 	}
 
 	// This will un/install this tool as an MTA end exit if either of the flags

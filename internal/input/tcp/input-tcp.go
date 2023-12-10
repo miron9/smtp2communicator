@@ -11,6 +11,7 @@ import (
 	c "smtp2communicator/internal/common"
 	"smtp2communicator/pkg/utils"
 
+	//"github.com/DusanKasan/parsemail"
 	"go.uber.org/zap"
 )
 
@@ -41,6 +42,13 @@ func handleConnection(log *zap.SugaredLogger, hostname string, conn net.Conn, ms
 
 	// Use a bufio.Reader to read lines from the connection
 	reader := bufio.NewReader(conn)
+
+	//m, err := parsemail.Parse(reader)
+	//if err != nil {
+	//log.Error(err)
+	//return
+	//}
+	//fmt.Println(m)
 
 	body := []string{}
 
