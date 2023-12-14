@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"flag"
-	"fmt"
 	"io/fs"
 	"os"
 	"sync"
@@ -79,8 +78,15 @@ func main() {
 	}
 
 	// flags
-	configurationFileFlag := flag.String("configuration", defaultConfigurationPath, "path to configuration file")
-	verbosityLevelFlag := flag.String("verbosity", "info", "logging level, one of debug, info, error")
+	// with shorthand
+	configurationFileFlag := new(string)
+	flag.StringVar(configurationFileFlag, "configuration", defaultConfigurationPath, "path to configuration file")
+	flag.StringVar(configurationFileFlag, "c", defaultConfigurationPath, "path to configuration file")
+	verbosityLevelFlag := new(string)
+	flag.StringVar(verbosityLevelFlag, "verbosity", "info", "logging level, one of debug, info, error")
+	flag.StringVar(verbosityLevelFlag, "v", "info", "logging level, one of debug, info, error")
+
+	// without shorthand
 	installMTAOnlyFlag := flag.Bool("installMTA", false, "link this tool to 'sendmail' making it effectively being seen as an MTA")
 	uninstallMTAOnlyFlag := flag.Bool("uninstallMTA", false, "unlink this tool from 'sendmail'")
 	systemdInstallFlag := flag.Bool("systemdInstall", false, "create Systemd service, enable and start it")
@@ -128,8 +134,7 @@ func main() {
 		} else {
 			log.Errorf("The configuration file must be specified with --configuration flag or exist in one of the following locations: %s", configurationNotFound)
 		}
-		msg := fmt.Sprintf("Can't load configuration file from '%s'. Does it exist?", *configurationFileFlag)
-		panic(msg)
+		os.Exit(1)
 	}
 
 	// This will un/install this tools as a Systemd service and exit if either
