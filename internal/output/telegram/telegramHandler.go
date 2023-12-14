@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"strings"
 
+	"smtp2communicator/internal/common"
+
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"go.uber.org/zap"
-	"smtp2communicator/internal/common"
 )
 
 // sendTelegramMsg sends a message to Telegram communicator
@@ -22,24 +23,30 @@ import (
 // Returns:
 // - err (error): if any or nil
 func SendTelegramMsg(log *zap.SugaredLogger, conf common.TelegramChannel, newMessage common.Message) error {
-
-	msg, err := formatTelegramMessage(log, newMessage)
-	if err != nil {
-		return err
-	}
-
 	b, err := gotgbot.NewBot(conf.BotKey, nil)
 	if err != nil {
 		log.Errorf("Error creating new bot: %v", err)
 		return err
 	}
 
-	_, err = b.SendMessage(conf.UserId, msg, &gotgbot.SendMessageOpts{
-		ParseMode: "MarkdownV2",
-	})
-	if err != nil {
-		log.Errorf("Error sending Telegram message: %v", err)
-		return err
+	msgFmtd := formatTelegramMessage(log, newMessage)
+	// Telegram can take up to 4096 long message with all formating included
+	chunkedMsgs := common.Splitter(4050, msgFmtd)
+	totalMsgs := len(chunkedMsgs)
+	msgCount := 1
+	for chunkId, chunk := range chunkedMsgs {
+		if err != nil {
+			return err
+		}
+		chunk = fmt.Sprintf("(%d/%d)\n%s", msgCount, totalMsgs, chunk)
+		_, err = b.SendMessage(conf.UserId, markdownMessage(chunk), &gotgbot.SendMessageOpts{
+			ParseMode: "MarkdownV2",
+		})
+		if err != nil {
+			log.Errorf("Error sending Telegram message %d: %v", chunkId, err)
+			return err
+		}
+		msgCount++
 	}
 
 	log.Infof("Telegram message sent")
@@ -57,8 +64,7 @@ func SendTelegramMsg(log *zap.SugaredLogger, conf common.TelegramChannel, newMes
 // Returns:
 //
 // - msgFmtd (string): a formatted message as a code block
-// - err (error): error if any or nil
-func formatTelegramMessage(log *zap.SugaredLogger, msg common.Message) (msgFmtd string, err error) {
+func formatTelegramMessage(log *zap.SugaredLogger, msg common.Message) (msgFmtd string) {
 	msgFmtd = fmt.Sprintf("Time: %s\nFrom: %s\nTo: %s\nSubject: %s\n\n%s",
 		msg.Time, msg.From, msg.To, msg.Subject, msg.Body)
 
@@ -73,13 +79,10 @@ func formatTelegramMessage(log *zap.SugaredLogger, msg common.Message) (msgFmtd 
 
 	replacer.Replace(msgFmtd)
 
-	msgFmtd = fmt.Sprintf("```\n%s\n```", msgFmtd)
+	return msgFmtd
+}
 
-	if len(msgFmtd) > 4096 {
-		log.Error("Message not sent as too long")
-		//return "", errors.New("Message to long")
-		msgFmtd = fmt.Sprintf("%s...", msgFmtd[:4093])
-	}
-
-	return msgFmtd, nil
+func markdownMessage(message string) (msgFmtd string) {
+	msgFmtd = fmt.Sprintf("```\n%s\n```", message)
+	return msgFmtd
 }
