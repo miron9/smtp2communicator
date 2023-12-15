@@ -100,7 +100,7 @@ func FindConfigurationFile(ctx context.Context, myPath string, configurationFile
 
 	cwd, err := os.Getwd()
 	if err != nil {
-		log.Error(err)
+		log.Errorf("Can't get current working directory: %v", err)
 		return
 	}
 
