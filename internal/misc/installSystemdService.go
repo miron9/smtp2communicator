@@ -3,6 +3,7 @@ package misc
 import (
 	"context"
 	"fmt"
+	"os"
 	"os/exec"
 
 	"smtp2communicator/pkg/logger"
@@ -40,6 +41,11 @@ func SystemdService(
 	// get logger
 	log := logger.LoggerFromContext(ctx)
 
+	// Check if we're root user
+	if os.Geteuid() != 0 {
+		log.Fatal("Systemd un/install must be ran as root user")
+	}
+
 	// check if systemd installed by looking up systemd executable
 	if systemdPath, err := exec.LookPath("systemd"); err != nil {
 		log.Info("It doesn't look like Systemd is present on this system. Exiting.")
@@ -57,7 +63,7 @@ func SystemdService(
 		s.Description = "This is my smtp stub that forwards all emails to a communicator"
 		s.ExecStart = fmt.Sprintf("%s -configuration %s -verbosity debug", executableInstallationPath, configurationFileName)
 		s.AddFileToCopy(*configurationFileFlag, configurationFileName, 0o600)
-		s.AddFileToCopy(thisBinaryPath, executableInstallationPath, 0o755)
+		s.AddFileToCopy(thisBinaryPath, executableInstallationPath, 0o755|os.ModeSetuid)
 
 		if *systemdInstallFlag {
 			s.InstallEnableStart()
