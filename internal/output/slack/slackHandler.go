@@ -25,9 +25,7 @@ func SendSlackMsg(log *zap.SugaredLogger, conf common.SlackChannel, newMessage c
 
 		chunk = markdownMessage(chunk)
 
-		s1, s2, s3, err := s.SendMessage(conf.UserId, slack.MsgOptionText(chunk, true))
-		fmt.Println(s1, s2, s3, err)
-
+		_, _, _, err := s.SendMessage(conf.UserId, slack.MsgOptionText(chunk, true))
 		if err != nil {
 			log.Errorf("Error sending Slack message %d: %v", chunkId, err)
 			return err

@@ -66,7 +66,7 @@ func SaveEmailToFile(log *zap.SugaredLogger, conf i.FileChannel, msg i.Message) 
 		log.Errorf("Can't save to file: %v", err)
 		return err
 	}
-	log.Infof("Email saved to %s\n", filename)
+	log.Infof("Email saved to %s", filename)
 
 	return nil
 }
