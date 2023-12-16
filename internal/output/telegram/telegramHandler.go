@@ -10,14 +10,14 @@ import (
 	"go.uber.org/zap"
 )
 
-// sendTelegramMsg sends a message to Telegram communicator
+// SendTelegramMsg sends a message to Telegram communicator
 //
 // This function takes 2 arguments, 'conf' being Telegram specific configuration
 // as defined in accompanying configuration file and the actual message to be sent 'msg'.
 //
 // Parameters:
 //
-// - conf (TelegramChannel):  Telegram configuration struct
+// - conf (TelegramChannel): Telegram configuration struct
 // - msg (string): message to be sent
 //
 // Returns:

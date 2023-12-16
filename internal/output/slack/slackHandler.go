@@ -10,6 +10,18 @@ import (
 	"github.com/slack-go/slack"
 )
 
+// SendSlackMsg sends a message to Slack communicator
+//
+// This function takes 2 arguments, 'conf' being Slack specific configuration
+// as defined in accompanying configuration file and the actual message to be sent 'msg'.
+//
+// Parameters:
+//
+// - conf (TelegramChannel): Slack configuration struct
+// - msg (string): message to be sent
+//
+// Returns:
+// - err (error): if any or nil
 func SendSlackMsg(log *zap.SugaredLogger, conf common.SlackChannel, newMessage common.Message) (err error) {
 	s := slack.New(conf.BotKey)
 
