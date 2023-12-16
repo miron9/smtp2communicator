@@ -10,19 +10,19 @@ import (
 	"go.uber.org/zap"
 )
 
-// sendTelegramMsg sends a message to Telegram communicator
+// SendTelegramMsg sends a message to Telegram communicator
 //
 // This function takes 2 arguments, 'conf' being Telegram specific configuration
 // as defined in accompanying configuration file and the actual message to be sent 'msg'.
 //
 // Parameters:
 //
-// - conf (TelegramChannel):  Telegram configuration struct
+// - conf (TelegramChannel): Telegram configuration struct
 // - msg (string): message to be sent
 //
 // Returns:
 // - err (error): if any or nil
-func SendTelegramMsg(log *zap.SugaredLogger, conf common.TelegramChannel, newMessage common.Message) error {
+func SendTelegramMsg(log *zap.SugaredLogger, conf common.TelegramChannel, newMessage common.Message) (err error) {
 	b, err := gotgbot.NewBot(conf.BotKey, nil)
 	if err != nil {
 		log.Errorf("Error creating new bot: %v", err)

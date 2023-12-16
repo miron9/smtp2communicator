@@ -41,11 +41,6 @@ func SystemdService(
 	// get logger
 	log := logger.LoggerFromContext(ctx)
 
-	// Check if we're root user
-	if os.Geteuid() != 0 {
-		log.Fatal("Systemd un/install must be ran as root user")
-	}
-
 	// check if systemd installed by looking up systemd executable
 	if systemdPath, err := exec.LookPath("systemd"); err != nil {
 		log.Info("It doesn't look like Systemd is present on this system. Exiting.")
@@ -56,6 +51,14 @@ func SystemdService(
 
 	// Systemd
 	if !*systemdInstallFlag || !*systemdUninstallFlag {
+
+		if *systemdInstallFlag || *systemdUninstallFlag {
+			// Check if we're root user
+			if os.Geteuid() != 0 {
+				log.Fatal("Systemd un/install must be ran as root user")
+			}
+		}
+
 		s := service.New(ctx)
 		configurationFileName := fmt.Sprintf("%s%s.yaml", configurationInstallPath, projectName)
 		executableInstallationPath := fmt.Sprintf("%s%s", binInstallPath, projectName)

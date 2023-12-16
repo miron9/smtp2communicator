@@ -24,6 +24,8 @@ type TelegramChannel struct {
 }
 type SlackChannel struct {
 	Enabled bool
+	UserId  string `yaml:"userId"`
+	BotKey  string `yaml:"botKey"`
 }
 type TeamsChannel struct {
 	Enabled bool
