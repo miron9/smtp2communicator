@@ -22,7 +22,7 @@ import (
 //
 // Returns:
 // - err (error): if any or nil
-func SendTelegramMsg(log *zap.SugaredLogger, conf common.TelegramChannel, newMessage common.Message) error {
+func SendTelegramMsg(log *zap.SugaredLogger, conf common.TelegramChannel, newMessage common.Message) (err error) {
 	b, err := gotgbot.NewBot(conf.BotKey, nil)
 	if err != nil {
 		log.Errorf("Error creating new bot: %v", err)
