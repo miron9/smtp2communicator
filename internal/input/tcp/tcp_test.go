@@ -41,8 +41,8 @@ func TestProcessTCP(t *testing.T) {
 
 	// define a test message
 	testMsg := common.Message{
-		From:    "cron@example.com",
-		To:      "user@example.com",
+		From:    "<cron@example.com>",
+		To:      "<user@example.com>",
 		Subject: "hello test",
 		Body:    "body body body",
 	}

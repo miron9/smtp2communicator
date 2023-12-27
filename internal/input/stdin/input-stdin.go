@@ -3,13 +3,13 @@ package stdin
 import (
 	"bufio"
 	"io"
+	"net/mail"
 	"strings"
 	"time"
 
 	c "smtp2communicator/internal/common"
 
-	"smtp2communicator/pkg/utils"
-
+	"github.com/DusanKasan/parsemail"
 	"go.uber.org/zap"
 )
 
@@ -21,6 +21,7 @@ import (
 // Parameters:
 //
 // - log (*zap.SugaredLogger): logger
+// - input (io.Reader): where to read from the input (usually os.Stdin)
 // - msgProcessed (chan<- bool): exit status indicating if we did any work here
 // - msgChan (chan<- c.Message): channel to send a message to
 //
@@ -30,49 +31,35 @@ import (
 // - err (error): error if any or nil
 func readStdin(log *zap.SugaredLogger, input io.Reader, msgProcessed chan<- bool, msgChan chan<- c.Message) {
 	scanner := bufio.NewScanner(input)
-	// scanner := bufio.NewScanner(os.Stdin)
-
-	newMessage := c.Message{
-		Time: time.Now(),
-	}
-
-	headers := map[string]string{}
-	headersCron := []string{}
 
 	body := []string{}
-
-	for scanner.Scan() {
-		line := scanner.Text()
-
-		if result, err := utils.KvExtractor(line); err == nil {
-			if utils.MatchString("exact", result[0], "x-cron-env") {
-				headersCron = append(headersCron, result[1])
-			} else {
-				headers[strings.ToLower(result[0])] = result[1]
-			}
-		}
-
-		// an empty line in this block will mean begin of actual message body
-		if utils.MatchString("exact", line, "") {
-			break
-		}
-	}
 
 	for scanner.Scan() {
 		line := scanner.Text()
 		body = append(body, line)
 	}
 
+	bodyText := strings.Join(body, "\n")
+
+	parsedMsg, err := parsemail.Parse(strings.NewReader(bodyText))
+	if err != nil {
+		log.Error(err)
+		return
+	}
+
 	// send info that no message in body hence not sending anything and exit
-	if len(body) == 0 {
+	if len(parsedMsg.TextBody) == 0 {
 		msgProcessed <- false
 		return
 	}
 
-	newMessage.From = headers["from"]
-	newMessage.To = headers["to"]
-	newMessage.Subject = headers["subject"]
-	newMessage.Body = strings.Join(body, "\n")
+	newMessage := c.Message{
+		Time: time.Now(),
+	}
+	newMessage.From = getEmailAddr(parsedMsg.From, parsedMsg.Header["From"][0])
+	newMessage.To = getEmailAddr(parsedMsg.To, parsedMsg.Header["To"][0])
+	newMessage.Subject = parsedMsg.Subject
+	newMessage.Body = parsedMsg.TextBody
 
 	// send message to dispatcher
 	msgChan <- newMessage
@@ -81,4 +68,36 @@ func readStdin(log *zap.SugaredLogger, input io.Reader, msgProcessed chan<- bool
 	// indicate we've done work
 	msgProcessed <- true
 	close(msgProcessed)
+}
+
+// getEmailAddr extracts email address from parsed message
+//
+// This function is returning email address as it was specified in the source email
+// but it will look for it first in From attribute and if not present then it will be
+// read from headers. This is addressing issue where for example Cron can set sender and
+// recipient to be invalid email addresses and in such case the parsemail module
+// used here is not going to set it in From attribute but raw value is still present in headers.
+//
+// Parameters:
+//
+// - parsedEmailList ([]*mail.Address): content of the From or To attributes from parsed email
+// - unParsedEmail (string): this is basically defult value to be returned if parsedEmailList is empty
+//
+// Returns:
+//
+// - fmtdField (string): comma seprated email addresses
+func getEmailAddr(parsedEmailList []*mail.Address, unParsedEmail string) (fmtdField string) {
+	if len(parsedEmailList) > 0 {
+		return mailToString(parsedEmailList)
+	} else {
+		return unParsedEmail
+	}
+}
+
+func mailToString(emailList []*mail.Address) (fmtdField string) {
+	for _, value := range emailList {
+		fmtdField = value.String() + ", "
+	}
+	fmtdField = fmtdField[:len(fmtdField)-2]
+	return fmtdField
 }

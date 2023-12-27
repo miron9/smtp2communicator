@@ -1,3 +1,5 @@
+github.com/DusanKasan/parsemail v1.2.0 h1:CrzTL1nuPLxB41aO4zE/Tzc9GVD8jjifUftlbTKQQl4=
+github.com/DusanKasan/parsemail v1.2.0/go.mod h1:B9lfMbpVe4DMqPImAOCGti7KEwasnRTrKKn66iQefVs=
 github.com/PaulSonOfLars/gotgbot/v2 v2.0.0-rc.23 h1:gfa4qPLiGemeBgQDEFH4s8N9HcS+5o+V/4ycmB35c1Y=
 github.com/PaulSonOfLars/gotgbot/v2 v2.0.0-rc.23/go.mod h1:kL1v4iIjlalwm3gCYGvF4NLa3hs+aKEfRkNJvj4aoDU=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
