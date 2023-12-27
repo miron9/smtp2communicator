@@ -1,0 +1,31 @@
+From: sender@example.com
+To: recipient@example.com
+Subject: Sample Email
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="section_boundary"
+
+--section_boundary
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+
+Hello, this is a text part of the email.
+
+--section_boundary
+Content-Type: text/html; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+<html>
+<body>
+<p>Hello, this is an <b>HTML</b> part of the email.</p>
+</body>
+</html>
+
+--section_boundary
+Content-Type: image/jpeg
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="image.jpg"
+
+Cg==
+
+--section_boundary--
+

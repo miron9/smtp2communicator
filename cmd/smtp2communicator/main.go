@@ -96,7 +96,7 @@ func main() {
 
 	// sendmail flags, to support the way Cron invokes it to pipe a message to it via stdin
 	// Nov 25 19:14:01 desktop cron[108918]: [/usr/sbin/sendmail -FCronDaemon -i -B8BITMIME -oem auser]
-	flag.Bool("FCronDaemon", false, "does nothing, required by Cron")
+	flag.String("F", "CronDaemon", "does nothing, required by Cron")
 	flag.Bool("i", false, "does nothing, required by Cron")
 	flag.Bool("oi", false, "does nothing, required by NeoMutt")
 	flag.Bool("B8BITMIME", false, "does nothing, required by Cron")

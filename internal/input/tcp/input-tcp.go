@@ -11,6 +11,7 @@ import (
 	c "smtp2communicator/internal/common"
 	"smtp2communicator/pkg/utils"
 
+	"github.com/DusanKasan/parsemail"
 	"go.uber.org/zap"
 )
 
@@ -42,7 +43,7 @@ func handleConnection(log *zap.SugaredLogger, hostname string, conn net.Conn, ms
 	// Use a bufio.Reader to read lines from the connection
 	reader := bufio.NewReader(conn)
 
-	body := []string{}
+	newBody := []string{}
 
 	// read headers
 	for {
@@ -61,6 +62,9 @@ func handleConnection(log *zap.SugaredLogger, hostname string, conn net.Conn, ms
 		if utils.MatchString("start", line, "mail from") {
 			if result, err := utils.KvExtractor(line); err == nil {
 				newMessage.From = result[1]
+
+				newBody = append(newBody, fmt.Sprintf("From: %s\n", result[1]))
+
 				conn.Write([]byte("250 OK (mail from)\n"))
 			}
 		}
@@ -68,6 +72,9 @@ func handleConnection(log *zap.SugaredLogger, hostname string, conn net.Conn, ms
 		if utils.MatchString("start", line, "rcpt to") {
 			if result, err := utils.KvExtractor(line); err == nil {
 				newMessage.To = result[1]
+
+				newBody = append(newBody, fmt.Sprintf("To: %s\n", result[1]))
+
 				conn.Write([]byte("250 OK (rcpt to)\n"))
 			}
 		}
@@ -79,34 +86,17 @@ func handleConnection(log *zap.SugaredLogger, hostname string, conn net.Conn, ms
 	}
 
 	// here we read actual message
-	inMessageBodyBlock := false
 	for {
 		line, err := reader.ReadString('\n')
 		if err != nil {
 			log.Error("Can't read from stdin")
 		}
 
-		// if the line is subject then read it and skip adding to body
-		if utils.MatchString("start", line, "subject") {
-			if result, err := utils.KvExtractor(line); err == nil {
-				newMessage.Subject = result[1]
-			}
-		}
-
-		// an empty line in this block will mean begin of actual message body
-		if utils.MatchString("exact", line, "") {
-			inMessageBodyBlock = true
-		}
-
-		// get all lines of the message's body into the slice
-		if inMessageBodyBlock {
-			body = append(body, line)
-		}
-
 		// a single '.' on it's own means end of message
 		if utils.MatchString("exact", line, ".") {
 			conn.Write([]byte("250 OK body\n"))
-			inMessageBodyBlock = false
+			continue
+
 		}
 
 		if err != nil {
@@ -121,16 +111,27 @@ func handleConnection(log *zap.SugaredLogger, hostname string, conn net.Conn, ms
 			conn.Write([]byte("221 OK quit\n"))
 			break
 		}
+
+		newBody = append(newBody, line)
 	}
-	// trim first and last line as it will contain word "data" and "."
-	newMessage.Body = strings.Join(body[1:len(body)-1], "")
 
-	// trim last carriage return and new line characters that were sent
-	newMessage.Body = strings.TrimRight(newMessage.Body, "\r\n")
-
-	if len(body) == 0 {
+	msgString := strings.Join(newBody, "")
+	msgStringLen := len(msgString)
+	msgString = msgString[:msgStringLen-2] // remove trailing \r\n
+	parsedMsg, err := parsemail.Parse(strings.NewReader(msgString))
+	if err != nil {
+		log.Error(err)
 		return
 	}
+
+	if len(parsedMsg.TextBody) == 0 {
+		return
+	}
+
+	newMessage.From = parsedMsg.From[0].String()
+	newMessage.To = parsedMsg.To[0].String()
+	newMessage.Subject = parsedMsg.Subject
+	newMessage.Body = parsedMsg.TextBody
 
 	msgChan <- newMessage
 }
