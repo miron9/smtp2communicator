@@ -35,7 +35,7 @@ func ProcessTCP(ctx context.Context, msgChan chan<- common.Message, port int) {
 	}
 
 	// Start the SMTP server on the specified port
-	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
+	listener, err := net.Listen("tcp", fmt.Sprintf("127.0.0.1:%d", port))
 	if err != nil {
 		log.Fatalf("Error starting SMTP server: %v", err)
 	}
