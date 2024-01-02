@@ -174,5 +174,5 @@ func main() {
 	m.SendmailMTAInstall(ctx, cronSendmailMTAPath, mtaStubInstalled)
 
 	// start listener and handle tcp connections
-	tcp.ProcessTCP(ctx, msgChan, conf.Port)
+	tcp.ProcessTCP(ctx, msgChan, conf.Host, conf.Port)
 }

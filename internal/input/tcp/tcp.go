@@ -24,7 +24,7 @@ import (
 // Returns:
 //
 // - n/a
-func ProcessTCP(ctx context.Context, msgChan chan<- common.Message, port int) {
+func ProcessTCP(ctx context.Context, msgChan chan<- common.Message, host string, port int) {
 	log := logger.LoggerFromContext(ctx)
 
 	// determine hostname to be used
@@ -35,7 +35,7 @@ func ProcessTCP(ctx context.Context, msgChan chan<- common.Message, port int) {
 	}
 
 	// Start the SMTP server on the specified port
-	listener, err := net.Listen("tcp", fmt.Sprintf("127.0.0.1:%d", port))
+	listener, err := net.Listen("tcp", fmt.Sprintf("%s:%d", host, port))
 	if err != nil {
 		log.Fatalf("Error starting SMTP server: %v", err)
 	}

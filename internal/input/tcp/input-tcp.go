@@ -6,7 +6,6 @@ import (
 	"io"
 	"net"
 	"strings"
-	"time"
 
 	c "smtp2communicator/internal/common"
 	"smtp2communicator/pkg/utils"
@@ -33,9 +32,7 @@ import (
 func handleConnection(log *zap.SugaredLogger, hostname string, conn net.Conn, msgChan chan<- c.Message) {
 	defer conn.Close()
 
-	newMessage := c.Message{
-		Time: time.Now(),
-	}
+	newMessage := c.Message{}
 
 	connectionMessage := fmt.Sprintf("220 %s\n", hostname)
 	conn.Write([]byte(connectionMessage))
@@ -128,6 +125,7 @@ func handleConnection(log *zap.SugaredLogger, hostname string, conn net.Conn, ms
 		return
 	}
 
+	newMessage.Time = parsedMsg.Date
 	newMessage.From = parsedMsg.From[0].String()
 	newMessage.To = parsedMsg.To[0].String()
 	newMessage.Subject = parsedMsg.Subject

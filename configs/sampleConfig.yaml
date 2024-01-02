@@ -1,3 +1,4 @@
+host: 127.0.0.1
 tcpPort: 25
 channels:
   file:
