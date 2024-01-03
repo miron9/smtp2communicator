@@ -19,3 +19,6 @@ clean:
 
 tidy:
 	$(GOCMD) mod tidy
+
+fmt:
+	@bash -c '[[ $$(go fmt ./... | wc -l) == "0" ]]'
