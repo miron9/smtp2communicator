@@ -21,4 +21,5 @@ tidy:
 	$(GOCMD) mod tidy
 
 fmt:
+	@echo "if this stage fails then you need to run 'go fmt ./...' and commit again"
 	@bash -c '[[ $$(go fmt ./... | wc -l) == "0" ]]'
