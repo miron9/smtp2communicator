@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"flag"
+	"fmt"
 	"io/fs"
 	"os"
 	"sync"
@@ -28,6 +29,7 @@ const (
 )
 
 var (
+	version           string
 	logLevel          zapcore.Level
 	log               *zap.SugaredLogger
 	conf              *c.Configuration
@@ -92,6 +94,7 @@ func main() {
 	systemdInstallFlag := flag.Bool("systemdInstall", false, "create Systemd service, enable and start it")
 	systemdUninstallFlag := flag.Bool("systemdUninstall", false, "stop, disable and delete Systemd service")
 	configurationExample := flag.Bool("configurationExample", false, "print to stdout example configuration file")
+	versionFlag := flag.Bool("version", false, "print version to stdout")
 	// TODO add option to allow to pass free text to the tool so any message (not only email) can be sent
 
 	// sendmail flags, to support the way Cron invokes it to pipe a message to it via stdin
@@ -103,6 +106,15 @@ func main() {
 	flag.Bool("oem", false, "does nothing, required by Cron")
 
 	flag.Parse()
+
+	// version printing
+	if *versionFlag {
+		if version == "" {
+			version = "dirty"
+		}
+		fmt.Println(version)
+		return
+	}
 
 	// set logging level
 	switch *verbosityLevelFlag {
