@@ -5,8 +5,8 @@ on:
     tags:
       - "v[0-9]+.[0-9]+.*"
     branches: ["main"]
-  pull_request:
-    branches: ["main"]
+  #pull_request:
+  #branches: ["main"]
   pull_request_target:
     types: ["opened"]
 
@@ -47,3 +47,23 @@ jobs:
 
       - name: Build
         run: make build
+
+      - name: generate release notes
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api -X POST 'repos/{owner}/{repo}/releases/generate-
+notes' \
+-F commitish=${{ env.RELEASE_VERSION }} \
+-F tag_name=${{ env.RELEASE_VERSION }} \
+> tmp-release-notes.json
+
+      - name: debug
+        run: cat tmp-release-notes.json
+
+      - name: create release
+        run: |
+          jq -r .body tmp-release-notes.json > tmp-release-notes.md
+gh release create ${{ env.RELEASE_VERSION }} \
+-t "$(jq -r .name tmp-release-notes.json)" \
+-F tmp-release-notes.md ./smtp2communicator
