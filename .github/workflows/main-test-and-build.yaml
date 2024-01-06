@@ -52,7 +52,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh api -X POST "repos/$GITHUB_REPOSITORY/releases/generate-notes" \
+          gh api -x post "repos/${{ github.repository }}/releases/generate-notes" \
           -F commitish=${{ env.RELEASE_VERSION }} \
           -F tag_name=${{ env.RELEASE_VERSION }} > tmp-release-notes.json
 
