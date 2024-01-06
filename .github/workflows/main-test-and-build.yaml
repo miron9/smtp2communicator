@@ -34,6 +34,8 @@ jobs:
     needs: test
     if: startsWith(github.ref_name, 'v')
     runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v3
 
@@ -49,11 +51,9 @@ jobs:
         run: make build
 
       - name: generate release notes
-        env:
-          GH_TOKEN: ${{ github.token }}
         run: |
           gh api -X post "repos/${{ github.repository }}/releases/generate-notes" \
-          -F commitish=main \
+          -F commitish=${{ env.RELEASE_VERSION }} \
           -F tag_name=${{ env.RELEASE_VERSION }} > tmp-release-notes.json
 
       - name: debug
