@@ -2,7 +2,8 @@ name: Main Branch
 
 on:
   push:
-    tags: [".*"]
+    tags:
+      - "v[0-9]+.[0-9]+.*"
     branches: ["main"]
   pull_request:
     branches: ["main"]
@@ -10,7 +11,7 @@ on:
     types: ["opened"]
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -25,6 +26,24 @@ jobs:
 
       - name: Run tests
         run: make test
+
+      - name: Build
+        run: make build
+
+  release:
+    needs: test
+    if: startsWith(github.ref_name, 'v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.21"
+
+      - name: Set RELEASE_VERSION env var
+        run: echo "RELEASE_VERSION=${{ github.ref_name }}" >> $GITHUB_ENV
 
       - name: Build
         run: make build
