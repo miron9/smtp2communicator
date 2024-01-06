@@ -53,7 +53,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh api -X post "repos/${{ github.repository }}/releases/generate-notes" \
-          -F commitish=${{ env.RELEASE_VERSION }} \
+          -F commitish=main \
           -F tag_name=${{ env.RELEASE_VERSION }} > tmp-release-notes.json
 
       - name: debug
