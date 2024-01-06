@@ -29,7 +29,7 @@ import (
 // Returns:
 //
 // - exit (bool): true if stdin message was processed and we should exit
-func ProcessStdin(ctx context.Context, input io.Reader, msgChan chan c.Message, wg *sync.WaitGroup, stdinTimeout int) (exit bool) {
+func ProcessStdin(ctx context.Context, input io.Reader, msgChan chan<- c.Message, wg *sync.WaitGroup, stdinTimeout int) (exit bool) {
 	log := logger.LoggerFromContext(ctx)
 
 	// listen for a message on stdin first

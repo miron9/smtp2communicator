@@ -5,7 +5,6 @@ import (
 	"io"
 	"net/mail"
 	"strings"
-	"time"
 
 	c "smtp2communicator/internal/common"
 
@@ -47,14 +46,14 @@ func readStdin(log *zap.SugaredLogger, input io.Reader, msgProcessed chan<- bool
 		return
 	}
 
-	// send info that no message in body hence not sending anything and exit
+	// send info that there was no message in the body hence not sending anything and return
 	if len(parsedMsg.TextBody) == 0 {
 		msgProcessed <- false
 		return
 	}
 
 	newMessage := c.Message{
-		Time: time.Now(),
+		Time: parsedMsg.Date,
 	}
 	newMessage.From = getEmailAddr(parsedMsg.From, parsedMsg.Header["From"][0])
 	newMessage.To = getEmailAddr(parsedMsg.To, parsedMsg.Header["To"][0])

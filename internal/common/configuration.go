@@ -41,6 +41,7 @@ type Channels struct {
 	Whatsup  WhatsupChannel
 }
 type Configuration struct {
+	Host     string
 	Port     int `yaml:"tcpPort"`
 	Channels Channels
 }

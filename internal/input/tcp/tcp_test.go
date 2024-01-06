@@ -24,17 +24,18 @@ func TestProcessTCP(t *testing.T) {
 	// Create a channel for receiving messages
 	msgChan := make(chan common.Message, 10) // Adjust the buffer size as needed
 
-	// Choose an available port for testing
+	// host and port for testing
+	host := "127.0.0.1"
 	testPort := 12345
 
 	// Start the ProcessTCP function in a goroutine
-	go ProcessTCP(ctx, msgChan, testPort)
+	go ProcessTCP(ctx, msgChan, host, testPort)
 
 	// Allow some time for the server to start
 	time.Sleep(100 * time.Millisecond)
 
 	// Create a test TCP connection to the server
-	conn, err := net.Dial("tcp", fmt.Sprintf(":%d", testPort))
+	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", host, testPort))
 	if err != nil {
 		t.Fatalf("Failed to connect to server: %v", err)
 	}

@@ -11,6 +11,7 @@ import (
 // ConfigurationExample prints to stdout an example confiuration
 func ConfigurationExample() {
 	config := c.Configuration{
+		Host: "127.0.0.1",
 		Port: 25,
 		Channels: c.Channels{
 			File: c.FileChannel{
