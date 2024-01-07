@@ -56,7 +56,7 @@ jobs:
           -F commitish=${{ env.RELEASE_VERSION }} \
           -F tag_name=${{ env.RELEASE_VERSION }} > tmp-release-notes.json
 
-      - name: debug: show generated release notes
+      - name: debug - show generated release notes
         run: cat tmp-release-notes.json
 
       - name: create release
