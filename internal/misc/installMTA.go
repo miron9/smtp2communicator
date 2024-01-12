@@ -20,13 +20,18 @@ import (
 //
 // - ctx (context.Context): context
 // - cronSendmailMTAPath (string): path where cron will look for sendmail
-// - mtaStubInstalled (bool): flag indicating if we linked ourselves to sendmail
 //
 // Returns:
 //
 // - err (error): error if any or nil
-func SendmailMTAInstall(ctx context.Context, cronSendmailMTAPath string, mtaStubInstalled bool) (err error) {
+func SendmailMTAInstall(ctx context.Context, cronSendmailMTAPath string) (err error) {
 	log := logger.LoggerFromContext(ctx)
+
+	// Check if we're root user
+	if os.Geteuid() != 0 {
+		log.Error("Sendmail stub un/install must be run as the root user. Skipping.")
+		return errors.New("Not a root user")
+	}
 
 	_, err = os.Stat(cronSendmailMTAPath)
 	if errors.Is(err, fs.ErrNotExist) {
@@ -35,13 +40,10 @@ func SendmailMTAInstall(ctx context.Context, cronSendmailMTAPath string, mtaStub
 			log.Errorf("Can't symlink Sendmail: %v", err)
 		}
 		log.Infof("Stub symlinked to '%s'", cronSendmailMTAPath)
-		mtaStubInstalled = true
 	} else {
 		log.Warn("Some other MTA already present, not installing the stub")
 		return errors.New("Sendmail already linked")
 	}
-
-	signalHandler(ctx, cronSendmailMTAPath, mtaStubInstalled)
 
 	return
 }
@@ -64,6 +66,12 @@ func SendmailMTAInstall(ctx context.Context, cronSendmailMTAPath string, mtaStub
 func SendmailMTAUninstall(ctx context.Context, uninstallMTAOnly bool, cronSendmailMTAPath string, mtaStubInstalled bool) (err error) {
 	log := logger.LoggerFromContext(ctx)
 
+	// Check if we're root user
+	if os.Geteuid() != 0 {
+		log.Error("Sendmail stub un/install must be run as the root user. Skipping.")
+		return errors.New("Not a root user")
+	}
+
 	if mtaStubInstalled || uninstallMTAOnly {
 		err = os.Remove(cronSendmailMTAPath)
 		if err != nil {
@@ -81,12 +89,14 @@ func SendmailMTAUninstall(ctx context.Context, uninstallMTAOnly bool, cronSendma
 //
 // Parameters:
 //
-// - n/a
+// - ctx (context.Context): context
+// - cronSendmailMTAPath (string): path where cron will look for sendmail
+// - mtaStubInstalled (bool): flag indicating if we linked ourselves to sendmail
 //
 // Returns:
 //
 // - n/a
-func signalHandler(ctx context.Context, cronSendmailMTAPath string, mtaStubInstalled bool) {
+func SignalHandler(ctx context.Context, cronSendmailMTAPath string, mtaStubInstalled bool) {
 	log := logger.LoggerFromContext(ctx)
 
 	signals := make(chan os.Signal, 1)
@@ -96,9 +106,12 @@ func signalHandler(ctx context.Context, cronSendmailMTAPath string, mtaStubInsta
 		switch <-signals {
 		case syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGHUP:
 			log.Info("Termination requested, staring clean up...")
-			SendmailMTAUninstall(ctx, false, cronSendmailMTAPath, mtaStubInstalled)
+			err := SendmailMTAUninstall(ctx, false, cronSendmailMTAPath, mtaStubInstalled)
 			log.Info("Exiting...")
-			os.Exit(1)
+			if err != nil {
+				os.Exit(1)
+			}
+			os.Exit(0)
 		}
 	}()
 }
@@ -117,15 +130,16 @@ func signalHandler(ctx context.Context, cronSendmailMTAPath string, mtaStubInsta
 //
 // Returns:
 //
-// - n/a
-func MtaOnly(ctx context.Context, installMTAOnly *bool, uninstallMTAOnly *bool, cronSendmailMTAPath string, mtaStubInstalled bool) {
-	log := logger.LoggerFromContext(ctx)
-
+// - exit (bool): flag indicating if the programme should terminate after this function is done
+// - err (error): error if any or nil
+func MtaOnly(ctx context.Context, installMTAOnly *bool, uninstallMTAOnly *bool, cronSendmailMTAPath string, mtaStubInstalled bool) (exit bool, err error) {
 	// MTA sendmail
 	if !*installMTAOnly || !*uninstallMTAOnly {
 		// link as an MTA only
 		if *installMTAOnly {
-			if SendmailMTAInstall(ctx, cronSendmailMTAPath, mtaStubInstalled) == nil {
+			exit = true
+			err = SendmailMTAInstall(ctx, cronSendmailMTAPath)
+			if err == nil {
 				os.Exit(0)
 			} else {
 				os.Exit(1)
@@ -133,14 +147,17 @@ func MtaOnly(ctx context.Context, installMTAOnly *bool, uninstallMTAOnly *bool, 
 		}
 		// unlink as an MTA
 		if *uninstallMTAOnly {
-			if SendmailMTAUninstall(ctx, true, cronSendmailMTAPath, mtaStubInstalled) == nil {
+			exit = true
+			err = SendmailMTAUninstall(ctx, true, cronSendmailMTAPath, mtaStubInstalled)
+			if err == nil {
 				os.Exit(0)
 			} else {
 				os.Exit(1)
 			}
 		}
 	} else {
-		log.Error("The 'installMTA' and 'uninstallMTA' flags can't be used together!")
-		os.Exit(1)
+		exit = true
+		err = errors.New("The 'installMTA' and 'uninstallMTA' flags can't be used together!")
 	}
+	return
 }

@@ -166,8 +166,15 @@ func main() {
 	}
 
 	// This will un/install this tool as an MTA end exit if either of the flags
-	// has been defined
-	m.MtaOnly(ctx, installMTAOnlyFlag, uninstallMTAOnlyFlag, cronSendmailMTAPath, mtaStubInstalled)
+	// has been defined (installMTAOnlyFlag, uninstallMTAOnlyFlag)
+	exit, err := m.MtaOnly(ctx, installMTAOnlyFlag, uninstallMTAOnlyFlag, cronSendmailMTAPath, mtaStubInstalled)
+	if exit {
+		if err != nil {
+			log.Error(err)
+			os.Exit(1)
+		}
+		os.Exit(0)
+	}
 
 	// channel that input sources pass received messages to dispatcher for sending
 	msgChan := make(chan c.Message, 1)
@@ -183,7 +190,12 @@ func main() {
 	// stub set-up to allow Cron to send emails, this will be in place only
 	// for the time of execution of this tool (as in opposition to
 	// installMTAOnlyFlag, uninstallMTAOnlyFlag) and only if not other tool already linked to sendmail
-	m.SendmailMTAInstall(ctx, cronSendmailMTAPath, mtaStubInstalled)
+	err = m.SendmailMTAInstall(ctx, cronSendmailMTAPath)
+	if err == nil {
+		mtaStubInstalled = true
+	}
+
+	m.SignalHandler(ctx, cronSendmailMTAPath, mtaStubInstalled)
 
 	// start listener and handle tcp connections
 	tcp.ProcessTCP(ctx, msgChan, conf.Host, conf.Port)
