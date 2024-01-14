@@ -41,12 +41,28 @@ var (
 func init() {
 	// init some var
 	// mtaStubInstalled indicates if we linked ourselves to sendmail
-	// this is used to unlink on termination
+	// this is used to determine if we need to unlink on termination
 	mtaStubInstalled = false
 
+	// TODO disable trace printing with warning, it's possible
+
 	// init logger
-	l, err := zap.NewDevelopment()
-	// l, err := zap.NewProduction()
+	var l *zap.Logger
+	var err error
+	var config zap.Config
+	if len(version) != 0 {
+		// this is actual release
+		config = zap.NewProductionConfig()
+		config.DisableStacktrace = true
+		config.Level = zap.NewAtomicLevelAt(zap.InfoLevel) // set initial value for the mode
+	} else {
+		// this is development mode
+		config = zap.NewDevelopmentConfig()
+		config.DisableStacktrace = false
+		config.Level = zap.NewAtomicLevelAt(zap.DebugLevel) // set initial value for the mode
+	}
+
+	l, err = config.Build()
 	if err != nil {
 		panic("Can't create logger")
 	}
@@ -54,6 +70,7 @@ func init() {
 	log = l.Sugar()
 	defer l.Sync()
 
+	// get and save this binary's path
 	thisBinaryPath, err = utils.GetMyPath()
 	if err != nil {
 		log.Error(err)
