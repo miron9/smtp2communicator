@@ -43,7 +43,7 @@ func readStdin(log *zap.SugaredLogger, input io.Reader, msgProcessed chan<- bool
 
 	parsedMsg, err := parsemail.Parse(strings.NewReader(bodyText))
 	if err != nil {
-		log.Error(err)
+		log.Errorf("Can't parse a mesage: %v", err)
 		return
 	}
 
