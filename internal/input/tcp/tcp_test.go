@@ -22,13 +22,12 @@ func TestProcessTCP(t *testing.T) {
 	ctx = logger.ContextWithLogger(ctx, log)
 
 	// Create a channel for receiving messages
-	msgChan := make(chan common.Message, 10) // Adjust the buffer size as needed
+	msgChan := make(chan common.Message, 10)
 
 	// host and port for testing
 	host := "127.0.0.1"
 	testPort := 12345
 
-	// Start the ProcessTCP function in a goroutine
 	go ProcessTCP(ctx, msgChan, host, testPort)
 
 	// Allow some time for the server to start
@@ -52,29 +51,22 @@ func TestProcessTCP(t *testing.T) {
 
 	// send HELO, FROM and TO headers and read responses
 	conn.Write([]byte("HELO example.com\r\n"))
-	// reader.ReadString('\n')
 
 	conn.Write([]byte(fmt.Sprintf("MAIL FROM: %s\r\n", testMsg.From)))
-	// reader.ReadString('\n')
 
 	conn.Write([]byte(fmt.Sprintf("RCPT TO: %s\r\n", testMsg.To)))
-	// reader.ReadString('\n')
 
 	conn.Write([]byte("DATA\r\n"))
-	// reader.ReadString('\n')
 
 	conn.Write([]byte(fmt.Sprintf("Subject: %s\r\n", testMsg.Subject)))
-	// reader.ReadString('\n')
 
 	conn.Write([]byte("\r\n"))
 
 	conn.Write([]byte(fmt.Sprintf("%s", testMsg.Body)))
 
 	conn.Write([]byte("\r\n.\r\n"))
-	// reader.ReadString('\n')
 
 	conn.Write([]byte("QUIT\r\n"))
-	// reader.ReadString('\n')
 	conn.Close()
 
 	time.Sleep(100 * time.Millisecond)

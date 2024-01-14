@@ -45,7 +45,7 @@ tmpfs 31G 0 31G 0% /run/qem`,
 		"X-Cron-Env: <HOME=/home/user>\n"+
 		"X-Cron-Env: <LOGNAME=user>\n\n%s", testMsg.From, testMsg.To, testMsg.Subject, testMsg.Body)
 
-	msgChan := make(chan common.Message, 10) // Adjust the buffer size as needed
+	msgChan := make(chan common.Message, 10)
 
 	data := strings.NewReader(message)
 

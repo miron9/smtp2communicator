@@ -6,6 +6,7 @@ import (
 	"io"
 	"net"
 	"strings"
+	"time"
 
 	c "smtp2communicator/internal/common"
 	"smtp2communicator/pkg/utils"
@@ -125,7 +126,15 @@ func handleConnection(log *zap.SugaredLogger, hostname string, conn net.Conn, ms
 		return
 	}
 
-	newMessage.Time = parsedMsg.Date
+	// If Year is 0 or 1 int then we replace that date with current time
+	var msgTime time.Time
+	if parsedMsg.Date.Year() <= 1 {
+		msgTime = time.Now()
+	} else {
+		msgTime = parsedMsg.Date
+	}
+
+	newMessage.Time = msgTime
 	newMessage.From = parsedMsg.From[0].String()
 	newMessage.To = parsedMsg.To[0].String()
 	newMessage.Subject = parsedMsg.Subject
