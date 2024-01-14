@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/mail"
 	"strings"
+	"time"
 
 	c "smtp2communicator/internal/common"
 
@@ -52,8 +53,16 @@ func readStdin(log *zap.SugaredLogger, input io.Reader, msgProcessed chan<- bool
 		return
 	}
 
+	// If Year is 0 or 1 int then we replace that date with current time
+	var msgTime time.Time
+	if parsedMsg.Date.Year() <= 1 {
+		msgTime = time.Now()
+	} else {
+		msgTime = parsedMsg.Date
+	}
+
 	newMessage := c.Message{
-		Time: parsedMsg.Date,
+		Time: msgTime,
 	}
 	newMessage.From = getEmailAddr(parsedMsg.From, parsedMsg.Header["From"][0])
 	newMessage.To = getEmailAddr(parsedMsg.To, parsedMsg.Header["To"][0])
